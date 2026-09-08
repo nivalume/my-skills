@@ -1,0 +1,5 @@
+pymupdf4llm
+trafilatura
+yt-dlp
+openai-whisper
+tree-sitter-language-pack
