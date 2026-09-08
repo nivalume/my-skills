@@ -1,4 +1,4 @@
 interface:
   display_name: "qataker"
-  short_description: "从视频、PDF、网页和代码发现高质量问答，导出 Anki CSV"
-  default_prompt: "使用 $qataker 理解我提供的材料，精选能检验理解与应用的问题和答案，导出 Anki CSV。"
+  short_description: "从视频、PDF、网页和代码精选普通与代码问答，生成 Markdown 文件"
+  default_prompt: "使用 $qataker 理解我提供的材料，精选能检验理解与应用的普通问答和代码问答，生成以资料主题简短命名的 Markdown 文件。"

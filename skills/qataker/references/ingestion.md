@@ -22,7 +22,7 @@ python scripts/check_environment.py
 
 FFmpeg/ffprobe 是系统依赖：macOS 用 `brew install ffmpeg`，Debian/Ubuntu 用
 `sudo apt-get install ffmpeg`，Windows 用 `winget install Gyan.FFmpeg`，安装后重新检查 PATH。
-代码的 Python AST 和 CSV 导出只用标准库；其他基础 Python 依赖列在 `requirements.txt`。
+代码的 Python AST 解析只用标准库；其他基础 Python 依赖列在 `requirements.txt`。
 
 检查入口只验证导入、二进制与相邻脚本，不下载模型或语法库。
 包可导入不等于权重已缓存，更不等于提取成功。按下列对应分支准备资源，再开始材料处理。
@@ -64,7 +64,7 @@ python ../notetaker/scripts/extract_pdf.py inspect /task/source.pdf
 python ../notetaker/scripts/extract_pdf.py extract /task/source.pdf --tool pymupdf4llm --out /task/pdf-01
 ```
 
-`inspect` 只抽样页面；同时查看与制卡相关的原页。简单文本适合 PyMuPDF4LLM，需页级文本和坐标时用
+`inspect` 只抽样页面；同时查看与问答相关的原页。简单文本适合 PyMuPDF4LLM，需页级文本和坐标时用
 `--tool pymupdf`（输出带页码的 `content.txt` 和 `blocks.json`）。双栏、公式和复杂表格按实际质量选择
 MinerU，扫描件、结构化报告可用 Docling。检查器的推荐是线索，不是已验证的提取质量。
 
