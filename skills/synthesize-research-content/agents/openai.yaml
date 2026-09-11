@@ -1,4 +1,0 @@
-interface:
-  display_name: "Synthesize Research Content"
-  short_description: "Turn source material into researched Markdown"
-  default_prompt: "Use $synthesize-research-content to analyze this source, enrich it with web research, generate follow-up questions, and produce a clear Markdown synthesis."
