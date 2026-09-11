@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lieflat HTML Slides</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F0EFEB'/%3E%3Cpath d='M14 18h36v28H14z' fill='none' stroke='%231C1C1A' stroke-width='4'/%3E%3Cpath d='M22 27h20M22 35h12' stroke='%231C1C1A' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme:light; --bg:#F0EFEB; --ink:#1C1C1A; --ink-2:#4A4944; --muted:#8F8E88; --faint:#C6C5BF; --grid:#DEDDD6; --radius:24px; }
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--bg); color:var(--ink); font-family:Inter,sans-serif; }
+    button:focus-visible { outline:3px solid var(--ink); outline-offset:3px; }
+    .deck { height:100dvh; position:relative; }
+    .slide { position:absolute; inset:0; display:grid; align-content:center; gap:clamp(1rem,2.4vh,2rem); padding:clamp(2.5rem,7vw,7rem) clamp(2rem,9vw,9rem); overflow:hidden; opacity:0; visibility:hidden; transform:translateX(1.5rem); transition:opacity .28s ease,transform .28s ease; }
+    .slide[aria-hidden="false"] { opacity:1; visibility:visible; transform:none; }
+    .slide.dark { background:var(--ink); color:var(--bg); }
+    .slide[data-overflow="true"]::after { content:"CONTENT OVERFLOW"; position:absolute; top:1rem; right:1rem; padding:.35rem .55rem; background:var(--ink); color:var(--bg); font-size:.6rem; font-weight:800; letter-spacing:.1em; }
+    .slide.dark[data-overflow="true"]::after { background:var(--bg); color:var(--ink); }
+    .eyebrow,.source { font-size:clamp(.62rem,.8vw,.75rem); font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); }
+    h1,h2,h3,p { margin:0; }
+    h1 { max-width:14ch; font-size:clamp(3rem,8vw,7.6rem); line-height:.91; letter-spacing:-.065em; text-wrap:balance; }
+    h2 { max-width:18ch; font-size:clamp(2.2rem,5.3vw,5.3rem); line-height:.97; letter-spacing:-.055em; text-wrap:balance; }
+    h3 { font-size:clamp(1rem,1.5vw,1.35rem); letter-spacing:-.025em; }
+    p,li { font-size:clamp(.9rem,1.25vw,1.25rem); line-height:1.55; }
+    .lead { max-width:55ch; color:var(--ink-2); }
+    .dark .lead { color:var(--faint); }
+    .split { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(18rem,.95fr); gap:clamp(2rem,7vw,7rem); align-items:center; min-width:0; }
+    .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(.7rem,1.5vw,1.2rem); min-width:0; }
+    .card { min-width:0; padding:clamp(1.1rem,2vw,1.8rem); border-radius:var(--radius); background:var(--bg); }
+    .dark .card { background:var(--ink); color:var(--bg); }
+    .number { margin:.6rem 0 .2rem; font-size:clamp(2.8rem,6vw,6rem); line-height:1; font-weight:800; letter-spacing:-.06em; }
+    .rule { width:100%; height:.7rem; border-radius:999px; background:var(--grid); overflow:hidden; }
+    .rule span { display:block; width:68%; height:100%; border-radius:inherit; background:var(--ink); }
+    .source { align-self:end; padding-top:1rem; border-top:1px solid currentColor; }
+    .chrome { position:fixed; inset:auto 1rem 1rem 1rem; z-index:30; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:.75rem; pointer-events:none; }
+    .controls,.status { display:flex; align-items:center; gap:.45rem; pointer-events:auto; }
+    .controls button,.rail-toggle { min-width:2.35rem; height:2.35rem; padding:0 .75rem; border:1px solid var(--ink); border-radius:999px; background:var(--bg); color:var(--ink); font:700 .75rem/1 Inter,sans-serif; cursor:pointer; }
+    .status { justify-self:center; min-width:13rem; }
+    .progress { flex:1; height:.35rem; border-radius:999px; background:var(--grid); overflow:hidden; }
+    .progress span { display:block; height:100%; background:var(--ink); transition:width .28s ease; }
+    .counter { min-width:3.5rem; font-size:.7rem; font-weight:700; font-variant-numeric:tabular-nums; }
+    .reader-rail { position:fixed; top:0; right:0; bottom:0; z-index:40; width:min(23rem,88vw); padding:1rem; background:var(--bg); border-left:1px solid var(--ink); transform:translateX(101%); transition:transform .25s ease; overflow:auto; }
+    .reader-rail.open { transform:none; }
+    .rail-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
+    .rail-head button { border:0; background:none; color:var(--ink); font:800 1.5rem/1 Inter,sans-serif; cursor:pointer; }
+    .rail-list { display:grid; gap:.45rem; }
+    .rail-list button { width:100%; padding:.85rem; border:1px solid var(--grid); border-radius:14px; background:var(--bg); color:var(--ink); text-align:left; font:600 .8rem/1.35 Inter,sans-serif; cursor:pointer; }
+    .rail-list button[aria-current="true"] { border-color:var(--ink); }
+    dialog { width:min(38rem,calc(100% - 2rem)); padding:1.5rem; border:1px solid var(--ink); border-radius:var(--radius); background:var(--bg); color:var(--ink); }
+    dialog::backdrop { background:rgba(28,28,26,.55); }
+    dialog h2 { margin-bottom:1rem; font-size:2rem; }
+    dialog button { margin-top:1rem; padding:.65rem 1rem; border:1px solid var(--ink); border-radius:999px; background:var(--ink); color:var(--bg); font-weight:700; cursor:pointer; }
+    .outline-list { display:grid; gap:.5rem; }
+    .outline-list button { width:100%; margin:0; background:var(--bg); color:var(--ink); text-align:left; }
+    @media (max-width:760px) { .slide{padding:4rem 1.25rem 5rem}.split,.cards{grid-template-columns:1fr}.cards{max-height:58vh;overflow:auto}.status{min-width:7rem}.chrome{grid-template-columns:auto 1fr}.controls:last-child{display:none} }
+    @media (prefers-reduced-motion:reduce) { .slide,.progress span,.reader-rail{transition:none} }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-live="polite">
+    <section class="slide" id="slide-1" data-title="Opening claim" aria-hidden="false">
+      <div class="eyebrow">Verified story · 01</div>
+      <h1>One claim earns the whole opening.</h1>
+      <p class="lead">Replace every demo slide with source-backed content. Add slides when the story needs room.</p>
+      <div class="source">Source · Replace provenance</div>
+    </section>
+
+    <section class="slide" id="slide-2" data-title="Evidence" aria-hidden="true">
+      <div class="eyebrow">Evidence · 02</div>
+      <h2>Three measures reveal different parts of the same change.</h2>
+      <div class="cards">
+        <article class="card"><h3>First measure</h3><div class="number">42</div><p>Name the unit and period.</p></article>
+        <article class="card"><h3>Second measure</h3><div class="number">68%</div><p>State the denominator.</p></article>
+        <article class="card"><h3>Third measure</h3><div class="number">3×</div><p>Show the comparison baseline.</p></article>
+      </div>
+      <div class="source">Dataset · Replace source</div>
+    </section>
+
+    <section class="slide dark" id="slide-3" data-title="Decision" aria-hidden="true">
+      <div class="split">
+        <div><div class="eyebrow">Decision · 03</div><h2>The evidence points to one bounded next move.</h2></div>
+        <div><p class="lead">Use the final slide for a decision, implication, or handoff—not a repeated summary.</p><div class="rule"><span></span></div></div>
+      </div>
+      <div class="source">Conclusion · Replace evidence</div>
+    </section>
+  </main>
+
+  <nav class="chrome" aria-label="Slide navigation">
+    <div class="controls"><button type="button" data-action="prev" aria-label="Previous slide">←</button><button type="button" data-action="next" aria-label="Next slide">→</button></div>
+    <div class="status"><div class="progress" aria-hidden="true"><span></span></div><div class="counter" aria-live="polite"></div></div>
+    <div class="controls"><button type="button" data-action="outline">Outline</button><button type="button" data-action="help" aria-label="Keyboard help">?</button><button type="button" class="rail-toggle" data-action="rail">Reader</button></div>
+  </nav>
+
+  <aside class="reader-rail" aria-label="Reader rail" aria-hidden="true">
+    <div class="rail-head"><strong>Slides</strong><button type="button" data-action="rail" aria-label="Close reader rail">×</button></div>
+    <div class="rail-list"></div>
+  </aside>
+
+  <dialog id="outline"><h2>Outline</h2><div class="outline-list"></div><button type="button" data-close>Close</button></dialog>
+  <dialog id="help"><h2>Keyboard</h2><p>←/→ previous or next · Home/End first or last · O outline · R reader rail · ? help · Esc close</p><button type="button" data-close>Close</button></dialog>
+
+  <script>
+    (() => {
+      const slides = [...document.querySelectorAll('.slide')];
+      const progress = document.querySelector('.progress span');
+      const counter = document.querySelector('.counter');
+      const rail = document.querySelector('.reader-rail');
+      const railList = document.querySelector('.rail-list');
+      const outline = document.querySelector('#outline');
+      const outlineList = document.querySelector('.outline-list');
+      const help = document.querySelector('#help');
+      const saved = (() => { try { return Number(localStorage.getItem('lieflat-slide-index')); } catch { return 0; } })();
+      const hashIndex = Number(location.hash.match(/slide-(\d+)/)?.[1]) - 1;
+      let index = Number.isInteger(hashIndex) && hashIndex >= 0 ? hashIndex : (Number.isInteger(saved) ? saved : 0);
+
+      slides.forEach((slide, i) => {
+        const title = slide.dataset.title || `Slide ${i + 1}`;
+        for (const container of [railList, outlineList]) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = `${String(i + 1).padStart(2, '0')} · ${title}`;
+          button.dataset.slide = String(i);
+          container.append(button);
+        }
+      });
+
+      function checkOverflow() {
+        slides.forEach(slide => {
+          slide.dataset.overflow = String(slide.scrollHeight > slide.clientHeight + 1 || slide.scrollWidth > slide.clientWidth + 1);
+        });
+      }
+
+      function show(next, updateHash = true) {
+        index = Math.max(0, Math.min(slides.length - 1, next));
+        slides.forEach((slide, i) => slide.setAttribute('aria-hidden', String(i !== index)));
+        [...railList.children].forEach((button, i) => button.setAttribute('aria-current', String(i === index)));
+        progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+        counter.textContent = `${index + 1} / ${slides.length}`;
+        document.title = `${slides[index].dataset.title} · Lieflat Slides`;
+        if (updateHash) history.replaceState(null, '', `#slide-${index + 1}`);
+        try { localStorage.setItem('lieflat-slide-index', String(index)); } catch {}
+        checkOverflow();
+      }
+
+      function toggleRail(force) {
+        const open = force ?? !rail.classList.contains('open');
+        rail.classList.toggle('open', open);
+        rail.setAttribute('aria-hidden', String(!open));
+      }
+
+      document.addEventListener('click', event => {
+        const action = event.target.closest('[data-action]')?.dataset.action;
+        const slideTarget = event.target.closest('[data-slide]')?.dataset.slide;
+        if (action === 'prev') show(index - 1);
+        if (action === 'next') show(index + 1);
+        if (action === 'outline') outline.showModal();
+        if (action === 'help') help.showModal();
+        if (action === 'rail') toggleRail();
+        if (slideTarget !== undefined) { show(Number(slideTarget)); toggleRail(false); outline.close(); }
+        if (event.target.matches('[data-close]')) event.target.closest('dialog').close();
+      });
+
+      addEventListener('keydown', event => {
+        if (event.target.closest('dialog') || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
+        if (event.key === 'ArrowLeft') show(index - 1);
+        if (event.key === 'ArrowRight' || event.key === ' ') { event.preventDefault(); show(index + 1); }
+        if (event.key === 'Home') show(0);
+        if (event.key === 'End') show(slides.length - 1);
+        if (event.key.toLowerCase() === 'o') outline.showModal();
+        if (event.key.toLowerCase() === 'r') toggleRail();
+        if (event.key === '?') help.showModal();
+      });
+      addEventListener('hashchange', () => {
+        const next = Number(location.hash.match(/slide-(\d+)/)?.[1]) - 1;
+        if (Number.isInteger(next)) show(next, false);
+      });
+      addEventListener('resize', checkOverflow);
+      show(index);
+    })();
+  </script>
+</body>
+</html>

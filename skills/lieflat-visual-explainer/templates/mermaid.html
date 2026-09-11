@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lieflat Mermaid Explainer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F0EFEB'/%3E%3Cpath d='M13 19h16v14H13zM35 31h16v14H35zM29 26l8 8' fill='none' stroke='%231C1C1A' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; --bg:#F0EFEB; --ink:#1C1C1A; --muted:#8F8E88; --faint:#C6C5BF; --grid:#DEDDD6; --radius:24px; }
+    * { box-sizing: border-box; }
+    html { font-size: 16px; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:Inter,sans-serif; -webkit-font-smoothing:antialiased; }
+    button:focus-visible { outline:3px solid var(--ink); outline-offset:3px; }
+    .page { width:min(calc(100% - 2rem),1120px); margin:auto; padding:4rem 0; }
+    .eyebrow,.source { color:var(--muted); font-size:.7rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { max-width:18ch; margin:.55rem 0 1rem; font-size:clamp(2.3rem,6vw,5rem); line-height:.98; letter-spacing:-.05em; text-wrap:balance; }
+    .lead { max-width:65ch; margin:0 0 2rem; color:#4A4944; line-height:1.65; }
+    figure { margin:0; }
+    .diagram-shell { position:relative; min-width:0; padding:1rem; border-radius:var(--radius); background:var(--bg); }
+    .diagram-shell.expanded { position:fixed; inset:0; z-index:100; border-radius:0; padding:1rem; background:var(--bg); }
+    .mermaid-wrap { height:min(72vh,760px); min-height:420px; display:grid; grid-template-rows:auto 1fr; }
+    .expanded .mermaid-wrap { height:calc(100vh - 2rem); }
+    .zoom-controls { display:flex; align-items:center; gap:.45rem; padding:.2rem .2rem .85rem; }
+    .zoom-controls button { width:2.35rem; height:2.35rem; border:1px solid var(--ink); border-radius:999px; background:var(--bg); color:var(--ink); font:700 1rem/1 Inter,sans-serif; cursor:pointer; }
+    .zoom-controls button:last-of-type { width:auto; padding:0 .9rem; font-size:.72rem; letter-spacing:.05em; text-transform:uppercase; }
+    .zoom-label { margin-left:auto; color:var(--muted); font-size:.72rem; font-variant-numeric:tabular-nums; }
+    .mermaid-viewport { position:relative; min-width:0; overflow:hidden; border-top:1px solid var(--grid); border-bottom:1px solid var(--grid); cursor:grab; touch-action:none; }
+    .mermaid-viewport.dragging { cursor:grabbing; }
+    .mermaid-canvas { position:absolute; inset:0 auto auto 0; transform-origin:0 0; will-change:transform; }
+    .mermaid-canvas svg { display:block; max-width:none !important; height:auto; }
+    figcaption { max-width:65ch; padding:1rem .2rem 0; font-weight:600; line-height:1.5; }
+    .source { margin-top:2rem; padding-top:1rem; border-top:1px solid var(--ink); }
+    @media (max-width:700px) { .page{width:min(calc(100% - 1rem),1120px);padding:2rem 0}.mermaid-wrap{min-height:360px;height:68vh}.diagram-shell{padding:.5rem} }
+    @media (prefers-reduced-motion:reduce) { *{scroll-behavior:auto!important;transition:none!important;animation:none!important} }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="eyebrow">Architecture · verified mechanism</div>
+    <h1>Every edge names the work it performs.</h1>
+    <p class="lead">Replace the demo with one focused system claim. Keep detail outside the graph when it does not change topology.</p>
+
+    <figure>
+      <div class="diagram-shell" role="img" aria-label="A request flows through validation and processing before producing a result">
+        <div class="mermaid-wrap">
+          <div class="zoom-controls" aria-label="Diagram controls">
+            <button type="button" data-action="in" aria-label="Zoom in">+</button>
+            <button type="button" data-action="out" aria-label="Zoom out">−</button>
+            <button type="button" data-action="reset" aria-label="Reset zoom">↺</button>
+            <button type="button" data-action="expand" aria-label="Expand diagram">Expand</button>
+            <span class="zoom-label" aria-live="polite">100%</span>
+          </div>
+          <div class="mermaid-viewport">
+            <div class="mermaid-canvas">
+              <pre class="mermaid">
+flowchart TD
+  A["Request"] -->|validates input| B["Boundary"]
+  B -->|dispatches work| C["Processor"]
+  C -->|writes result| D["Output"]
+  C -->|reports failure| E["Visible error"]
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>The request crosses one validation boundary before work begins.</figcaption>
+    </figure>
+    <div class="source">Source · Replace with inspected evidence</div>
+  </main>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    import elkLayouts from 'https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk/dist/mermaid-layout-elk.esm.min.mjs';
+
+    mermaid.registerLayoutLoaders(elkLayouts);
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      look: 'classic',
+      layout: 'elk',
+      themeVariables: {
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '15px',
+        primaryColor: '#F0EFEB',
+        primaryTextColor: '#1C1C1A',
+        primaryBorderColor: '#1C1C1A',
+        secondaryColor: '#DEDDD6',
+        secondaryTextColor: '#1C1C1A',
+        secondaryBorderColor: '#4A4944',
+        tertiaryColor: '#C6C5BF',
+        tertiaryTextColor: '#1C1C1A',
+        tertiaryBorderColor: '#8F8E88',
+        lineColor: '#4A4944',
+        noteBkgColor: '#DEDDD6',
+        noteTextColor: '#1C1C1A',
+        noteBorderColor: '#8F8E88'
+      }
+    });
+
+    await mermaid.run({ querySelector: '.mermaid' });
+
+    const shell = document.querySelector('.diagram-shell');
+    const viewport = shell.querySelector('.mermaid-viewport');
+    const canvas = shell.querySelector('.mermaid-canvas');
+    const svg = canvas.querySelector('svg');
+    const label = shell.querySelector('.zoom-label');
+    const expandButton = shell.querySelector('[data-action="expand"]');
+    let scale = 1;
+    let x = 0;
+    let y = 0;
+    let dragging = false;
+    let pointerX = 0;
+    let pointerY = 0;
+
+    function svgSize() {
+      const box = svg.viewBox.baseVal;
+      return { width: box.width || svg.getBoundingClientRect().width, height: box.height || svg.getBoundingClientRect().height };
+    }
+
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+
+    function apply() {
+      const size = svgSize();
+      svg.style.width = `${size.width * scale}px`;
+      svg.style.height = `${size.height * scale}px`;
+      canvas.style.transform = `translate(${x}px, ${y}px)`;
+      label.textContent = `${Math.round(scale * 100)}%`;
+    }
+
+    function fit() {
+      const size = svgSize();
+      const availableWidth = Math.max(1, viewport.clientWidth - 32);
+      const availableHeight = Math.max(1, viewport.clientHeight - 32);
+      scale = clamp(Math.min(availableWidth / size.width, availableHeight / size.height), .1, 2);
+      x = (viewport.clientWidth - size.width * scale) / 2;
+      y = (viewport.clientHeight - size.height * scale) / 2;
+      apply();
+    }
+
+    function zoom(factor, originX = viewport.clientWidth / 2, originY = viewport.clientHeight / 2) {
+      const previous = scale;
+      scale = clamp(scale * factor, .1, 6);
+      x = originX - (originX - x) * (scale / previous);
+      y = originY - (originY - y) * (scale / previous);
+      apply();
+    }
+
+    shell.addEventListener('click', event => {
+      const action = event.target.closest('button')?.dataset.action;
+      if (action === 'in') zoom(1.18);
+      if (action === 'out') zoom(1 / 1.18);
+      if (action === 'reset') fit();
+      if (action === 'expand') {
+        shell.classList.toggle('expanded');
+        const expanded = shell.classList.contains('expanded');
+        expandButton.textContent = expanded ? 'Collapse' : 'Expand';
+        expandButton.setAttribute('aria-label', expanded ? 'Collapse diagram' : 'Expand diagram');
+        requestAnimationFrame(fit);
+      }
+    });
+
+    viewport.addEventListener('wheel', event => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      event.preventDefault();
+      const box = viewport.getBoundingClientRect();
+      zoom(event.deltaY < 0 ? 1.12 : 1 / 1.12, event.clientX - box.left, event.clientY - box.top);
+    }, { passive: false });
+
+    viewport.addEventListener('pointerdown', event => {
+      dragging = true;
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      viewport.classList.add('dragging');
+      viewport.setPointerCapture(event.pointerId);
+    });
+    viewport.addEventListener('pointermove', event => {
+      if (!dragging) return;
+      x += event.clientX - pointerX;
+      y += event.clientY - pointerY;
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      apply();
+    });
+    viewport.addEventListener('pointerup', () => { dragging = false; viewport.classList.remove('dragging'); });
+    viewport.addEventListener('pointercancel', () => { dragging = false; viewport.classList.remove('dragging'); });
+    addEventListener('keydown', event => {
+      if (event.key === 'Escape' && shell.classList.contains('expanded')) {
+        shell.classList.remove('expanded');
+        expandButton.textContent = 'Expand';
+        expandButton.setAttribute('aria-label', 'Expand diagram');
+        requestAnimationFrame(fit);
+      }
+    });
+    addEventListener('resize', fit);
+    fit();
+  </script>
+</body>
+</html>

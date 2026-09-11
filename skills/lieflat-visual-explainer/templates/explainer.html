@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lieflat Visual Explainer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F0EFEB'/%3E%3Ccircle cx='22' cy='32' r='8' fill='%231C1C1A'/%3E%3Cpath d='M32 32h18' stroke='%231C1C1A' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #F0EFEB;
+      --ink: #1C1C1A;
+      --ink-2: #4A4944;
+      --muted: #8F8E88;
+      --faint: #C6C5BF;
+      --grid: #DEDDD6;
+      --radius: 24px;
+      --content: 1120px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-underline-offset: .2em; }
+    a:focus-visible, button:focus-visible, summary:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 4px;
+    }
+    .skip {
+      position: fixed;
+      left: 1rem;
+      top: 1rem;
+      z-index: 20;
+      padding: .7rem 1rem;
+      background: var(--ink);
+      color: var(--bg);
+      transform: translateY(-180%);
+    }
+    .skip:focus { transform: none; }
+    .page {
+      width: min(calc(100% - 2rem), var(--content));
+      margin: 0 auto;
+      padding: 4rem 0 5rem;
+    }
+    .eyebrow, .source {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 16ch;
+      margin-bottom: 1rem;
+      font-size: clamp(2.5rem, 7vw, 5.8rem);
+      line-height: .96;
+      letter-spacing: -.055em;
+      text-wrap: balance;
+    }
+    h2 {
+      margin-bottom: .35rem;
+      font-size: clamp(1.35rem, 2.5vw, 2rem);
+      line-height: 1.1;
+      letter-spacing: -.035em;
+      text-wrap: balance;
+    }
+    h3 { margin-bottom: .45rem; font-size: 1rem; }
+    p, li { line-height: 1.65; }
+    .lead { max-width: 65ch; color: var(--ink-2); font-size: 1.05rem; }
+    .masthead {
+      min-height: 60vh;
+      display: grid;
+      align-content: end;
+      padding: 2rem 0 3rem;
+      border-bottom: 1px solid var(--ink);
+    }
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      gap: .6rem;
+      overflow-x: auto;
+      padding: .75rem 0;
+      background: var(--bg);
+    }
+    .nav a {
+      flex: 0 0 auto;
+      padding: .4rem .75rem;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    section { scroll-margin-top: 5rem; padding-top: 4rem; }
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(14rem, 1fr);
+      gap: 2rem;
+      align-items: end;
+      margin-bottom: 1.5rem;
+    }
+    .section-head p { margin-bottom: 0; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
+    .card {
+      grid-column: span 4;
+      min-width: 0;
+      min-height: 14rem;
+      padding: 1.6rem;
+      border-radius: var(--radius);
+      background: var(--bg);
+    }
+    .card.wide { grid-column: span 8; }
+    .card.dark { background: var(--ink); color: var(--bg); }
+    .card.dark .source, .card.dark p { color: var(--faint); }
+    .metric { margin: 1.3rem 0 .4rem; font-size: clamp(2.8rem, 8vw, 5.5rem); font-weight: 800; letter-spacing: -.06em; }
+    .rule { height: .65rem; margin: 1rem 0; border-radius: 999px; background: var(--grid); overflow: hidden; }
+    .rule > span { display: block; width: 72%; height: 100%; background: var(--ink); border-radius: inherit; }
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); }
+    table { width: 100%; min-width: 42rem; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th, td { padding: 1rem; border-bottom: 1px solid var(--grid); text-align: left; vertical-align: top; }
+    th { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; }
+    .timeline { display: grid; gap: .8rem; }
+    .event { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 1rem; padding: 1rem 0; border-top: 1px solid var(--grid); }
+    .event time { font-size: .75rem; font-weight: 700; }
+    .event p { margin-bottom: 0; }
+    .reveal { opacity: 0; transform: translateY(14px); transition: opacity .45s ease, transform .45s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+    footer { margin-top: 5rem; padding-top: 1rem; border-top: 1px solid var(--ink); }
+    @media (max-width: 760px) {
+      .page { width: min(calc(100% - 1.25rem), var(--content)); padding-top: 2rem; }
+      .masthead { min-height: 48vh; }
+      .section-head { grid-template-columns: 1fr; gap: .5rem; }
+      .card, .card.wide { grid-column: 1 / -1; min-height: auto; }
+      .event { grid-template-columns: 1fr; gap: .3rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <div class="page">
+    <header class="masthead">
+      <div class="eyebrow">Visual explainer · verified source</div>
+      <h1>The mechanism is clearer than its label.</h1>
+      <p class="lead">Replace this starter copy with one evidence-backed thesis and the minimum context the intended reader needs.</p>
+    </header>
+
+    <nav class="nav" aria-label="Page sections">
+      <a href="#overview">Overview</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#sequence">Sequence</a>
+    </nav>
+
+    <main id="content">
+      <section id="overview" class="reveal">
+        <div class="section-head">
+          <div><div class="eyebrow">01 · Overview</div><h2>Three facts establish the shape of the problem.</h2></div>
+          <p>Markers indicate real order; cards divide distinct claims.</p>
+        </div>
+        <div class="grid">
+          <article class="card dark"><h3>Primary finding</h3><div class="metric">72%</div><p>State the unit and denominator, not only the number.</p><div class="source">Source · Replace me</div></article>
+          <article class="card wide"><h3>What changes</h3><p>Use this area for a mechanism, comparison, or compact diagram—not decorative filler.</p><div class="rule"><span></span></div><div class="source">Evidence · Replace me</div></article>
+        </div>
+      </section>
+
+      <section id="evidence" class="reveal">
+        <div class="section-head"><div><div class="eyebrow">02 · Evidence</div><h2>The strongest evidence survives row-by-row inspection.</h2></div></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Claim</th><th>Evidence</th><th>Status</th></tr></thead>
+            <tbody><tr><td>Replace this claim</td><td>path/to/source:line</td><td>Verified</td></tr><tr><td>Replace this claim</td><td>Command or dataset</td><td>Bounded</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sequence" class="reveal">
+        <div class="section-head"><div><div class="eyebrow">03 · Sequence</div><h2>Order appears only where order changes meaning.</h2></div></div>
+        <div class="timeline"><article class="event"><time>Step 01</time><p>Replace with a real event or dependency.</p></article><article class="event"><time>Step 02</time><p>Keep the consequence beside the event that causes it.</p></article></div>
+      </section>
+    </main>
+
+    <footer class="source">Generated from inspected sources · Replace provenance</footer>
+  </div>
+  <script>
+    (() => {
+      const items = [...document.querySelectorAll('.reveal')];
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+        items.forEach(item => item.classList.add('visible'));
+        return;
+      }
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.12 });
+      items.forEach(item => observer.observe(item));
+    })();
+  </script>
+</body>
+</html>

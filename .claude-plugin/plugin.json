@@ -1,12 +1,13 @@
 {
   "name": "my-skills",
   "description": "A local collection of reusable skills for Codex and Claude Code.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": {
     "name": "a1"
   },
   "license": "UNLICENSED",
   "skills": [
+    "./skills/lieflat-visual-explainer",
     "./skills/notetaker",
     "./skills/paper",
     "./skills/prompt-generator"
