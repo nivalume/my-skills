@@ -1,6 +1,6 @@
 # My Skills
 
-Local skill collection packaged as both a Codex plugin and a Claude Code plugin.
+Reusable skills for Codex, Claude Code, and other agents. Each skill is a self-contained directory with a required `SKILL.md` and optional `agents/`, `references/`, `scripts/`, or `assets/` resources.
 
 ## Layout
 
@@ -11,55 +11,64 @@ my-skills/
 ├── claude-marketplace/.claude-plugin/marketplace.json
 ├── claude-marketplace/plugins/my-skills -> ../..
 ├── skills/
-│   └── <skill-name>/SKILL.md
+│   ├── notetaker/
+│   ├── paper/
+│   └── prompt-generator/
 └── assets/
 ```
 
-Add each skill as `skills/<skill-name>/SKILL.md`. Keep reusable scripts, references, or assets inside that skill folder so installed plugins do not depend on files outside the plugin root.
+Use lowercase hyphen-case names and keep each skill's supporting files inside its directory. Put a skill at `skills/<skill-name>/SKILL.md`. This flat layout is supported by both Codex's plugin validator and the `npx skills` catalog scanner.
 
 ## Add A Skill
 
-Use lowercase hyphen-case names:
-
 ```bash
-python3 /Users/a1/.codex/skills/.system/skill-creator/scripts/init_skill.py \
-  my-skill \
-  --path ./skills
+npx skills init skills/<skill-name>
 ```
 
-Then edit `skills/my-skill/SKILL.md` and validate the plugin.
+Then edit the generated `SKILL.md`. Add stable skills to `.claude-plugin/plugin.json`; Codex discovers all skills recursively below `./skills/`.
 
-## Codex
+## Install With The Skills CLI
 
-Validate:
+List available skills:
+
+```bash
+npx skills add rv64m/my-skills --list
+```
+
+Install `paper` globally for Codex and Claude Code. The CLI uses symlinks by default, so one canonical copy is shared by both agents:
+
+```bash
+npx skills add rv64m/my-skills --skill paper -g \
+  -a codex -a claude-code -y
+```
+
+Install the whole collection:
+
+```bash
+npx skills add rv64m/my-skills --skill '*' -g \
+  -a codex -a claude-code -y
+```
+
+Use `--copy` only when symlinks are unavailable or an independent copy is desired.
+
+## Plugin Validation
+
+Codex:
 
 ```bash
 uv run --with PyYAML python /Users/a1/.codex/skills/.system/plugin-creator/scripts/validate_plugin.py .
 ```
 
-This repo is a plugin root for Codex because it contains `.codex-plugin/plugin.json` and `skills/`.
-
-## Claude Code
-
-Test without installing:
+Claude Code:
 
 ```bash
 claude --plugin-dir /Users/a1/Codes/my-skills
+claude plugin validate /Users/a1/Codes/my-skills
 ```
 
-Install through the local marketplace:
+Install the local Claude marketplace with:
 
 ```bash
 claude plugin marketplace add /Users/a1/Codes/my-skills/claude-marketplace
 claude plugin install my-skills@my-skills-local
 ```
-
-The marketplace uses `claude-marketplace/plugins/my-skills` as a symlink back to this plugin root so the same source tree works for both Codex and Claude Code.
-
-Validate:
-
-```bash
-claude plugin validate /Users/a1/Codes/my-skills
-```
-
-When you add or change skills, bump the version in both plugin manifests and the marketplace entry before reinstalling.
