@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="{{LANG}}" dir="{{DIR}}" data-canvas-layout="{{LAYOUT}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="canvas-template" content="1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>{{TITLE}}</title>
+  <style id="canvas-base">
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff; --surface: #f5f5f5; --text: #141414; --muted: #606060;
+  --stroke: #dddddd; --accent: #2563a6; --on-accent: #ffffff;
+  --success: #18734b; --warning: #885c00; --danger: #b52c36;
+  --series-1: #2563a6; --series-2: #18734b; --series-3: #885c00; --series-4: #7952a3;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px;
+  --space-4: 16px; --space-6: 24px; --space-8: 32px; --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #181818; --surface: #222222; --text: #f0f0f0; --muted: #aaaaaa;
+    --stroke: #3b3b3b; --accent: #8ab4ef; --on-accent: #141414;
+    --success: #75c99c; --warning: #dfbd70; --danger: #f28b92;
+    --series-1: #8ab4ef; --series-2: #75c99c; --series-3: #dfbd70; --series-4: #c0a0e8;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: var(--space-6); }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/20px system-ui, sans-serif; overflow-wrap: anywhere; }
+[hidden] { display: none !important; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+h1, h2, h3, p, figure, pre, dl { margin: 0; }
+h1 { font-size: 24px; line-height: 30px; font-weight: 600; }
+h2 { font-size: 18px; line-height: 24px; font-weight: 600; }
+h3 { font-size: 16px; line-height: 22px; font-weight: 600; }
+ul, ol { margin: 0; padding-inline-start: var(--space-6); }
+li + li { margin-top: var(--space-1); }
+dt { color: var(--muted); }
+dd { margin: 0; }
+hr { border: 0; border-top: 1px solid var(--stroke); margin: var(--space-4) 0; }
+.page { max-width: 1200px; margin-inline: auto; padding: var(--space-8) var(--space-6); }
+.page-header { display: grid; gap: var(--space-3); margin-bottom: var(--space-8); max-width: 88ch; }
+.layout { display: grid; gap: var(--space-8); }
+[data-canvas-layout="docs"] .layout { grid-template-columns: 200px minmax(0, 1fr); }
+.content, .stack { display: grid; gap: var(--space-6); min-width: 0; }
+.section { display: grid; gap: var(--space-3); min-width: 0; scroll-margin-top: var(--space-6); }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
+.main-aside { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: var(--space-6); }
+.grid > *, .main-aside > * { min-width: 0; }
+.toc { position: sticky; top: var(--space-6); align-self: start; max-height: calc(100vh - 48px); overflow: auto; font-size: 12px; line-height: 16px; }
+.toc ol { display: grid; gap: var(--space-2); padding-inline-start: var(--space-4); margin-top: var(--space-3); }
+.toc a { color: var(--muted); }
+.toc a:hover, .toc a:focus { color: var(--accent); }
+.card { border: 1px solid var(--stroke); border-radius: var(--radius); min-width: 0; }
+.card-header { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--stroke); font-size: 12px; line-height: 16px; font-weight: 400; }
+.card-body { padding: var(--space-4); display: grid; gap: var(--space-3); }
+.muted, .small, figcaption { color: var(--muted); }
+.small, figcaption { font-size: 12px; line-height: 16px; }
+.numeric, .stat { font-variant-numeric: tabular-nums; }
+.numeric { text-align: end; }
+.stat { font-size: 24px; line-height: 30px; font-weight: 600; }
+.pill { display: inline-block; padding: 2px var(--space-2); border-radius: 999px; background: var(--surface); font-size: 12px; line-height: 16px; }
+.callout { padding: var(--space-3) var(--space-4); background: var(--surface); border-radius: var(--radius); display: grid; gap: var(--space-1); }
+.tone-info { color: var(--accent); }
+.tone-success, .diff-added { color: var(--success); }
+.tone-warning { color: var(--warning); }
+.tone-danger, .diff-removed { color: var(--danger); }
+.table-wrap { max-width: 100%; overflow: auto; border: 1px solid var(--stroke); border-radius: var(--radius); }
+table { width: 100%; border-collapse: collapse; }
+caption { text-align: start; padding: var(--space-3); font-weight: 600; }
+th, td { padding: var(--space-2) var(--space-3); text-align: start; vertical-align: top; border-bottom: 1px solid var(--stroke); }
+th { background: var(--surface); font-weight: 600; }
+tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+code { font-size: 0.92em; }
+pre { padding: var(--space-4); background: var(--surface); border-radius: var(--radius); overflow: auto; }
+pre code { font-size: 12px; line-height: 20px; }
+details { border-bottom: 1px solid var(--stroke); padding-block: var(--space-3); }
+summary { cursor: pointer; }
+details[open] > summary { margin-bottom: var(--space-3); }
+button, input, select, textarea { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--stroke); border-radius: var(--radius); }
+button { width: fit-content; padding: var(--space-1) var(--space-3); cursor: pointer; }
+button:hover { background: var(--surface); }
+button[aria-pressed="true"], .button-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+button:disabled { opacity: 0.6; cursor: default; }
+input, select, textarea { max-width: 100%; padding: var(--space-1) var(--space-2); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
+textarea { width: 100%; min-height: 80px; }
+label { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+figure { display: grid; gap: var(--space-3); min-width: 0; }
+img { max-width: 100%; height: auto; }
+.chart-wrap { max-width: 100%; overflow: auto; }
+.chart { display: block; width: 100%; min-width: 600px; height: auto; }
+.chart text { fill: var(--text); font-family: system-ui, sans-serif; font-size: 12px; }
+.chart-grid { stroke: var(--stroke); stroke-width: 1; }
+.chart-axis { stroke: var(--muted); stroke-width: 1; }
+.chart-line { fill: none; stroke: currentColor; stroke-width: 2; }
+.chart-node { fill: var(--surface); stroke: var(--stroke); stroke-width: 1; }
+.series-1 { color: var(--series-1); }
+.series-2 { color: var(--series-2); }
+.series-3 { color: var(--series-3); }
+.series-4 { color: var(--series-4); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-3); font-size: 12px; line-height: 16px; }
+.swatch { display: inline-block; width: 8px; height: 8px; margin-inline-end: var(--space-1); border-radius: 2px; background: currentColor; }
+.references { border-top: 1px solid var(--stroke); padding-top: var(--space-4); display: grid; gap: var(--space-3); }
+.skip-link { position: absolute; inset-inline-start: var(--space-4); top: -100px; padding: var(--space-2); background: var(--bg); }
+.skip-link:focus { top: var(--space-2); }
+@media (max-width: 760px) {
+  .page { padding: var(--space-6) var(--space-4); }
+  [data-canvas-layout="docs"] .layout, .grid, .main-aside { grid-template-columns: minmax(0, 1fr); }
+  .toc { position: static; max-height: none; }
+}
+@media print {
+  :root { color-scheme: light; --bg: #ffffff; --surface: #f5f5f5; --text: #141414; --muted: #606060; --stroke: #dddddd; --accent: #2563a6; --on-accent: #ffffff; --success: #18734b; --warning: #885c00; --danger: #b52c36; --series-1: #2563a6; --series-2: #18734b; --series-3: #885c00; --series-4: #7952a3; }
+  .page { max-width: none; padding: 0; }
+  .toc, .skip-link { display: none; }
+  [data-canvas-layout="docs"] .layout { display: block; }
+  .card, figure, tr { break-inside: avoid; }
+}
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#canvas-main">{{SKIP_LABEL}}</a>
+  <div class="page">
+    <header class="page-header">
+      <h1>{{TITLE}}</h1>
+      {{OVERVIEW}}
+    </header>
+    <div class="layout">
+      {{TOC}}
+      <main id="canvas-main" class="content">
+        {{CONTENT}}
+        {{REFERENCES}}
+      </main>
+    </div>
+  </div>
+  {{SCRIPT}}
+</body>
+</html>

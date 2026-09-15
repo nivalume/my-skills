@@ -1,4 +1,6 @@
-# Notebook 写作指南
+# 论文笔记写作指南
+
+本指南同时适用于 Markdown 与 notebook。先从用户请求解析 `output`（默认 `markdown`）和 `language`（默认 `zh`），再按目标语言撰写所有面向读者的文字。图表内部文字始终使用英文。
 
 目录：
 1. 整体结构
@@ -15,7 +17,7 @@
 ## 1. 整体结构
 
 ```
-0. 标题 + 论文信息 + 本 notebook 导读
+0. 标题 + 论文信息 + 本笔记导读
 1. 环境设置
 2. TL;DR 与问题背景
 3. 前置知识速补（按需）
@@ -23,7 +25,7 @@
 5. 方法详解（可拆成多个 5.x 小节）
 6. 核心实现
 7. 验证实验
-8. 论文结果 vs 本 notebook
+8. 论文结果 vs 本笔记
 9. 批判性思考
 10. 自测题
 11. 延伸阅读
@@ -45,15 +47,17 @@
 | 链接 | arXiv / 官网链接 |
 | 类型 | 分布式系统 · 共识算法 |
 
-**本 notebook 包含**：Raft leader election 与 log replication 的完整离散事件模拟实现；
+**本笔记包含**：Raft leader election 与 log replication 的完整离散事件模拟实现；
 随机故障注入下对 5 条 safety property 的验证；复现论文 Figure 15 的选举耗时分布。
 
-**运行需求**：numpy, matplotlib · CPU 约 2 分钟 · 首次运行自动安装缺失依赖；不依赖外部图片、论文或数据文件
+**运行需求**：numpy, matplotlib · CPU 约 2 分钟
 ```
+
+notebook 模式再补充“首次运行自动安装缺失依赖；不依赖外部图片、论文或数据文件”。Markdown 模式不要声称回复中的代码会自动安装依赖。
 
 ### 1. 环境设置
 
-第一个代码单元格必须先用当前 kernel 的 `sys.executable -m pip` 安装缺失依赖，再导入全部依赖、打印版本、固定随机种子、设置绘图默认样式。把实际使用的 import module 与 pip 包名维护在 `REQUIRED_PACKAGES` 中；不要写死 `pip` 或使用另一个 Python。
+notebook 模式的第一个代码单元格必须先用当前 kernel 的 `sys.executable -m pip` 安装缺失依赖，再导入全部依赖、打印版本、固定随机种子、设置绘图默认样式。把实际使用的 import module 与 pip 包名维护在 `REQUIRED_PACKAGES` 中；不要写死 `pip` 或使用另一个 Python。Markdown 模式只列出运行代码所需依赖，不包含自动安装单元格。
 
 ```python
 # PAPER_NOTEBOOK_DEPENDENCY_BOOTSTRAP
@@ -156,10 +160,10 @@ print(f"Python {sys.version.split()[0]} | numpy {np.__version__} | matplotlib {m
 
 实验跑完后，紧跟一个 markdown 单元格解读结果：**看到了什么 → 是否支持 claim → 有什么意外**。解读必须基于实际输出，先跑再写。
 
-### 8. 论文结果 vs 本 notebook
+### 8. 论文结果 vs 本笔记
 
 ```markdown
-| 结论 / 指标 | 论文 | 本 notebook | 是否一致 | 差异原因 |
+| 结论 / 指标 | 论文 | 本笔记 | 是否一致 | 差异原因 |
 |---|---|---|---|---|
 | 选举超时 150–300ms 时 leader 选出耗时 | 多数 < 300ms | 中位数 212ms | ✅ 定性一致 | 模拟网络延迟分布与真实环境不同 |
 | BLEU on WMT14 EN-DE | 28.4 | 未复现 | ➖ | 需要大规模训练，toy 实验只验证了机制 |
@@ -168,7 +172,7 @@ print(f"Python {sys.version.split()[0]} | numpy {np.__version__} | matplotlib {m
 ### 9. 批判性思考
 
 避免空泛的"本文也存在一定局限性"。回答具体问题：
-- 方法依赖哪些**隐含假设**？在什么场景下会失效？（最好用 notebook 里的代码构造一个失效例子）
+- 方法依赖哪些**隐含假设**？在什么场景下会失效？（最好用笔记里的代码构造一个失效例子）
 - 实验设计有没有漏洞？baseline 是否公平？
 - 如果你是审稿人，会问哪 2–3 个问题？
 - 后续工作（如果了解）改进了什么？
@@ -195,7 +199,7 @@ print(f"Python {sys.version.split()[0]} | numpy {np.__version__} | matplotlib {m
 
 ## 3. 笔记写作风格
 
-- **中文行文，术语保留英文**：写 "attention"、"log replication"、"Sharpe ratio"，不要硬译。术语第一次出现时可以加一句中文解释。
+- **使用目标语言，术语可保留英文**：`language=zh` 时写 “attention”“log replication”“Sharpe ratio”，不要硬译；其他语言也遵循该语言的自然表达习惯。术语第一次出现时可以用目标语言解释。
 - **先直觉后公式**。读者看到公式之前，应该已经大致知道它想表达什么。
 - **用"你"和读者对话**，语气像一位耐心的学长讲解，不像论文翻译。
 - **具体胜过抽象**。"leader 崩溃后，S2 和 S3 同时超时，各自拿到 2 票，谁也没过半"比"可能出现选票分裂"好理解得多。
@@ -222,9 +226,11 @@ $$\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right
 
 代码中保持相同的分解顺序，每一步一行，行尾标注。
 
-## 5. 原图嵌入
+## 5. 原图使用
 
-源 Markdown 中可以引用临时工作空间 `$PAPER_DIR/extract/figures/` 下的本地图片，但最终 `.ipynb` 必须只使用 notebook 内的 base64 数据。`build_notebook.py` 会把每个本地图片字节写入对应 Markdown cell 的 `attachments`，并把引用改成 `attachment:<name>`；不要在交付文件中留下 `extract/`、`figures/` 或其他相对图片路径，也不要使用远程图片 URL。当前工作目录只保留最终 `.ipynb`。
+notebook 模式的源 Markdown 可以引用临时工作空间 `$PAPER_DIR/extract/figures/` 下的本地图片，但最终 `.ipynb` 必须只使用 notebook 内的 base64 数据。`build_notebook.py` 会把每个本地图片字节写入对应 Markdown cell 的 `attachments`，并把引用改成 `attachment:<name>`；不要在交付文件中留下 `extract/`、`figures/` 或其他相对图片路径，也不要使用远程图片 URL。当前工作目录只保留最终 `.ipynb`。
+
+Markdown 模式直接在回复中交付内容，不得引用 `$PAPER_DIR` 或 `extract/figures/...`。如果没有稳定且可访问的图片 URL，用目标语言概述图中的关键观察并注明论文图号，不要输出失效的本地图片链接。
 
 格式：
 
@@ -238,16 +244,16 @@ term 7 的条目，(f) 则有 leader 从未见过的 term 2、3 条目。Raft �
 follower 的冲突日志，下面 6.3 节的 `append_entries` 实现正是这个逻辑。
 ```
 
-每张原图都要有"怎么看这张图"的说明，指出读者该关注的具体细节，并尽量连接到后面的代码。
+每张原图都要有目标语言的“怎么看这张图”说明，指出读者该关注的具体细节，并尽量连接到后面的代码。
 
-交付前用 `python <skill-dir>/scripts/build_notebook.py check <output>.ipynb` 检查 `embedded_images`、base64 attachment、引用完整性和 `dependency_bootstrap`。
+notebook 模式交付前用 `python <skill-dir>/scripts/build_notebook.py check <output>.ipynb` 检查 `embedded_images`、base64 attachment、引用完整性和 `dependency_bootstrap`。
 
 ## 6. 自绘解释图
 
 每张图只传达**一个信息**，在图前的 markdown 里说明这张图要看什么。
 
 约定：
-- 图中文字全部英文（标题、坐标轴、图例），避免中文字体问题
+- 图中文字全部英文（标题、坐标轴、图例），避免非英文字体兼容问题
 - 坐标轴带单位；对数坐标要明确标注
 - 比较多组结果时用多个随机种子，画均值 ± 标准差（`fill_between`）
 - 重复用到的画图逻辑封装成小函数，放在实现部分附近
@@ -270,6 +276,7 @@ follower 的冲突日志，下面 6.3 节的 `append_entries` 实现正是这个
 
 ## 8. 篇幅与节奏
 
-- 一般论文：60–120 个单元格。markdown 与代码大约各半。
-- 单个 markdown 单元格不超过一屏；单个代码单元格尽量不超过 40 行，长实现拆成多个单元格，中间穿插说明。
-- 避免连续三个以上的代码单元格没有任何文字说明。
+- notebook 模式的一般论文：60–120 个单元格，markdown 与代码大约各半。
+- Markdown 模式保持同样的章节与验证深度，但直接输出连续 Markdown，不使用 cell 分隔标记或 notebook 专属操作说明。
+- notebook 模式中，单个 markdown 单元格不超过一屏；单个代码单元格尽量不超过 40 行，长实现拆成多个单元格，中间穿插说明。
+- notebook 模式避免连续三个以上的代码单元格没有任何文字说明。

@@ -1,3 +1,5 @@
+<!-- Target language: {language code}. Translate all reader-facing prose and code comments into that language. Keep plot text in English. -->
+
 # 论文精读：{论文标题}
 
 | | |
@@ -7,7 +9,7 @@
 | 链接 | {arXiv 或官方链接} |
 | 类型 | {领域 · 子领域} |
 
-**本 notebook 包含**：{实现了什么；验证了哪些结论；复现了哪些图}
+**本笔记包含**：{实现了什么；验证了哪些结论；复现了哪些图}
 
 **运行需求**：{依赖} · CPU 约 {N} 分钟 · 首次运行自动安装缺失依赖；不依赖外部图片、论文或数据文件
 
@@ -60,7 +62,7 @@ print(f"Python {sys.version.split()[0]} | numpy {np.__version__} | matplotlib {m
 
 {作者的关键想法}
 
-![Figure 1: {图注中文}](extract/figures/figure_1_pN.png)
+![Figure 1: {目标语言图注}](extract/figures/figure_1_pN.png)
 
 *图源：原论文 Figure 1*
 
@@ -131,9 +133,9 @@ print(f"elapsed: {time.time() - t0:.1f}s")
 
 **结果解读**：{基于实际输出：看到了什么 → 是否支持 claim → 意外之处}
 
-## 8. 论文结果 vs 本 notebook
+## 8. 论文结果 vs 本笔记
 
-| 结论 / 指标 | 论文 | 本 notebook | 是否一致 | 差异原因 |
+| 结论 / 指标 | 论文 | 本笔记 | 是否一致 | 差异原因 |
 |---|---|---|---|---|
 | … | … | … | ✅ / ⚠️ / ❌ / ➖ | … |
 

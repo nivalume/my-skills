@@ -1,17 +1,38 @@
 ---
 name: paper
-description: 精读学术论文并生成可独立分享、可独立运行的 Jupyter notebook (.ipynb)。高质量提取 PDF 文字与原图（arXiv LaTeX 源码 / MinerU / PyMuPDF 矢量图裁剪），将图片以 base64 attachment 压入 notebook，并在第一个代码单元格自举缺失依赖。用中文笔记（术语保留英文）讲解，从零实现核心算法与数据结构，并用 Python 画图和实验验证论文结论。覆盖深度学习、算法与数据结构、系统/数据库/分布式、理论与数学推导、量化金融论文。只要用户想读懂、精读、复现、实现或学习一篇论文，或者上传论文 PDF、给出 arXiv 链接/编号并说“帮我读一下”“讲讲这篇论文”“复现这个算法”“做个论文笔记”，都应使用此 skill，即使用户没有提到 notebook。Also use for requests like read/study/reproduce/implement a research paper, paper walkthrough, or turn a paper into a notebook.
+description: 精读学术论文并生成 Markdown 学习笔记或可独立分享、可独立运行的 Jupyter notebook (.ipynb)。支持用 --output/-o 选择 markdown 或 notebook，用 --language/-l 选择讲解语言；默认输出中文 Markdown。高质量提取 PDF 文字与原图，从零实现核心算法与数据结构，并用 Python 画图和实验验证论文结论。只要用户想读懂、精读、复现、实现或学习一篇论文，或者上传论文 PDF、给出 arXiv 链接/编号并说“帮我读一下”“讲讲这篇论文”“复现这个算法”“做个论文笔记”，都应使用此 skill。Also use for requests like read/study/reproduce/implement a research paper, paper walkthrough, or turn a paper into Markdown notes or a notebook.
 ---
 
-# Paper → Notebook
+# Paper → Study Notes
 
-目标：把一篇论文变成一个**单文件、可在任何电脑上独立运行**的 `.ipynb`。读者打开它，从上到下运行，就能理解论文在解决什么问题、方法为什么成立、核心算法怎么实现，并亲眼看到代码实验验证了论文的哪些结论（以及哪些没能验证）。
+目标：把一篇论文变成可直接阅读的 Markdown 内容，或一个**单文件、可在任何电脑上独立运行**的 `.ipynb`。读者从上到下阅读或运行，就能理解论文在解决什么问题、方法为什么成立、核心算法怎么实现，并看到代码实验验证了论文的哪些结论（以及哪些没能验证）。
 
 笔记是给人学习用的，不是论文翻译。好的笔记会先讲直觉和动机，再讲公式；会指出论文没说清楚的地方；会诚实交代简化了什么。
 
-## 先判断：用户要的是完整 notebook 吗？
+## 用户参数
 
-完整流程耗时较长（通常几十分钟）。如果用户只是问一个关于论文的具体问题（"这篇的主要贡献是什么""公式 3 怎么推出来的"），直接回答，然后一句话提出可以生成完整的学习 notebook。用户明确要读论文、做笔记、复现、实现时，走下面的完整流程。
+把下列参数视为 **paper skill 的用户级参数**，不是传给 `extract_paper.py` 或 `build_notebook.py` 的 CLI 参数：
+
+| 参数 | 值 | 默认值 | 含义 |
+|---|---|---|---|
+| `--output`, `-o` | `markdown` \| `notebook` | `markdown` | 最终交付格式 |
+| `--language`, `-l` | `zh`, `en` 或其他语言码 | `zh` | 笔记的目标语言 |
+
+解析优先级：显式参数 > 用户自然语言中明确指定的格式或语言 > 默认值。自然语言中的“生成 notebook / ipynb”视为 `--output notebook`，“直接讲解 / Markdown 笔记”视为 `--output markdown`。如果显式 `--output` 不是 `markdown` 或 `notebook`，提示用户改用这两个值之一；语言码不限定枚举，只要能明确对应目标语言即可。
+
+`--language` 控制标题、正文、表格、图注说明和代码注释。专业术语可以保留英文；图表内部的标题、坐标轴和图例始终使用英文，避免 notebook 或渲染环境缺少目标语言字体。
+
+示例：
+
+```text
+$paper 1706.03762
+$paper 1706.03762 -o notebook -l en
+$paper 1706.03762 --output markdown --language ja
+```
+
+## 先判断：用户要的是完整笔记吗？
+
+完整流程耗时较长（通常几十分钟）。如果用户只是问一个关于论文的具体问题（“这篇的主要贡献是什么”“公式 3 怎么推出来的”），直接用目标语言回答；只有用户明确指定 `--output notebook` 时才为这种局部问题生成 notebook。用户明确要读论文、做笔记、复现、实现时，走下面的完整流程。
 
 如果论文是综述或包含大量独立方法，先问用户重点关注哪部分，而不是全部实现。
 
@@ -21,8 +42,8 @@ description: 精读学术论文并生成可独立分享、可独立运行的 Jup
 1. 获取与提取   → scripts/extract_paper.py
 2. 质检提取结果 → 必须亲眼看图和关键公式
 3. 精读与规划   → 按论文类型读 references/paper_types/*.md，写 plan.md
-4. 编写 notebook 源文件（Markdown），代码边写边跑
-5. 构建 + 隔离执行 + 修复 → scripts/build_notebook.py --execute
+4. 编写 Markdown 源稿，代码边写边跑
+5. 按 output 分支交付：直接返回 Markdown，或构建并隔离执行 notebook
 6. 交付前自查
 ```
 
@@ -35,7 +56,7 @@ PAPER_DIR="$PAPER_TMP/$PAPER_SLUG"
 mkdir -p "$PAPER_DIR"
 ```
 
-后续所有 `extract_paper.py`、人工修图、`plan.md`、`notebook.md` 和分段 Markdown 的路径都必须位于 `$PAPER_DIR` 下。构建器唯一写入当前工作目录的文件是最终的 `$PWD/${PAPER_SLUG}_notes.ipynb`；不要在当前目录创建任何中间目录或文件，包括提取目录、Markdown、图片、日志或 checkpoint。验证交付物后删除整个 `$PAPER_TMP`；若需要保留中间结果供排查，只保留在临时目录，不要复制到当前目录。`paper-slug` 用简短英文，如 `raft`、`attention-is-all-you-need`。
+后续所有 `extract_paper.py`、人工修图、`plan.md`、源稿和分段 Markdown 的路径都必须位于 `$PAPER_DIR` 下。Markdown 模式不在当前目录写入文件，最终直接返回 Markdown 内容；notebook 模式唯一写入当前工作目录的文件是最终的 `$PWD/${PAPER_SLUG}_notes.ipynb`。不要在当前目录创建任何中间目录或文件，包括提取目录、Markdown、图片、日志或 checkpoint。验证交付物后删除整个 `$PAPER_TMP`；若需要保留中间结果供排查，只保留在临时目录，不要复制到当前目录。`paper-slug` 用简短英文，如 `raft`、`attention-is-all-you-need`。
 
 ### 1. 获取与提取
 
@@ -94,6 +115,7 @@ MinerU 的安装、Mac/GPU 配置、模型下载问题见 `references/extraction
 
 然后写 `$PAPER_DIR/plan.md`，内容简短即可：
 
+- **最终格式和目标语言**：记录解析出的 `output` 与 `language`
 - **一句话核心思想**，以及读者需要的前置知识
 - **要实现的组件**：每个对应论文的哪个公式/算法编号
 - **验证实验清单**：每个实验对应论文的哪个 claim，toy 规模设置，预估运行时间
@@ -102,9 +124,20 @@ MinerU 的安装、Mac/GPU 配置、模型下载问题见 `references/extraction
 
 规划的价值在于确保每个实验都在验证论文的某个具体说法，而不是为了画图而画图。
 
-### 4. 编写 notebook 源文件
+### 4. 编写 Markdown 源稿
 
-复制 `assets/notebook_template.md` 为 `$PAPER_DIR/notebook.md` 作为骨架，然后逐节填写。**写之前先读 `references/notebook_guide.md`**，里面有每一节的写法、示例和格式约定。
+**写之前先读 `references/notebook_guide.md`**，里面有每一节的写法、示例、语言要求和两种输出模式的格式约定。notebook 模式复制 `assets/notebook_template.md` 为 `$PAPER_DIR/notebook.md` 作为骨架；Markdown 模式可在临时目录写 `$PAPER_DIR/notes.md` 辅助组织，但最终必须把内容直接放进回复，不能把临时文件当作交付物。
+
+两种模式共享同一质量标准：忠于论文、先讲直觉再讲公式、核心算法有实现、实验结论基于实际运行结果、明确标注简化和论文未说明之处。所有面向读者的自然语言都使用目标语言；生成完后检查没有混入模板默认中文（目标为 `zh` 时除外）。
+
+#### Markdown 模式
+
+- 最终回复本身就是完整 Markdown 内容，不附加“已保存到某文件”之类的交付说明，也不创建 `.md` 文件。
+- Python 实现保留为 fenced code block；在临时目录实际执行实现和实验，再把经过验证的关键输出与结果解读写入 Markdown。
+- 不输出 `$PAPER_DIR`、`extract/figures/...` 等本地临时路径。原图若无法作为稳定、可访问的 Markdown 图片呈现，就用目标语言描述其关键观察并标明论文图号；不要留下失效图片链接。
+- 不要求 dependency bootstrap、notebook cell 切分或 base64 attachment。
+
+#### Notebook 模式
 
 源文件格式（由 `build_notebook.py` 编译）：
 
@@ -119,7 +152,7 @@ MinerU 的安装、Mac/GPU 配置、模型下载问题见 `references/extraction
 
 **先跑实验，再写解读。** 实验结果（数字、曲线形状）要先跑出来再写对应的解读文字，不要凭预期写结论。实用做法：写实验代码时，在解读位置先放 `{{INTERP_实验名}}` 这样的占位符；构建执行后读取输出、查看生成的图，再替换占位符。构建前确认没有残留的 `{{`。
 
-**长 notebook 分段写。** 源文件较长时，按章节写成 `$PAPER_DIR/part1.md`、`$PAPER_DIR/part2.md`… 再合并成 `$PAPER_DIR/notebook.md`。每完成一两个部分就构建执行一次，尽早发现错误。
+**长源稿分段写。** 内容较长时，按章节写成 `$PAPER_DIR/part1.md`、`$PAPER_DIR/part2.md`… 再合并。notebook 模式每完成一两个部分就构建执行一次，尽早发现错误。
 
 实现原则：
 
@@ -128,7 +161,13 @@ MinerU 的安装、Mac/GPU 配置、模型下载问题见 `references/extraction
 - **为了 toy 规模做的简化**，用 `> 🔧 简化：...` 标出，并说明对结论可能的影响。
 - 可以参考官方代码来消除歧义，但实现应从论文出发，并在笔记中说明参考了什么。
 
-### 5. 构建、隔离执行、修复
+### 5. 按输出模式验证与交付
+
+#### Markdown
+
+在临时目录运行所有实现与实验，检查断言、具体数字和图表，再直接返回最终 Markdown。回复中不要包含过程性状态、临时文件路径或 notebook 专属措辞。
+
+#### Notebook
 
 ```bash
 python <skill-dir>/scripts/build_notebook.py "$PAPER_DIR/notebook.md" -o "$PWD/${PAPER_SLUG}_notes.ipynb" --execute
@@ -137,32 +176,45 @@ python <skill-dir>/scripts/build_notebook.py check "$PWD/${PAPER_SLUG}_notes.ipy
 
 脚本会在一个**空的临时目录**里执行 notebook，因此任何偷偷依赖本地文件的代码都会报错，这正是我们要的效果。输出 JSON 中 `ok: true` 才算通过。报错就修改 `notebook.md` 后重新构建，直到通过。同时检查报告中的 `exec_seconds`、`plot_outputs`、`embedded_images`、`dependency_bootstrap` 和 `invalid_attachments` 是否合理。图片 attachment 必须是可解码的 base64，Markdown 中不能留下外部图片引用。
 
+这里 `build_notebook.py` 的 `-o/--output` 是脚本自身的**输出文件路径**，与 paper skill 用户参数 `-o/--output markdown|notebook` 不是同一层接口，不要把格式值传给构建脚本。
+
 ### 6. 交付前自查
 
-- [ ] `build_notebook.py --execute` 报告 `ok: true`，无警告或警告已处理
+所有模式：
+
 - [ ] 每个核心公式/算法都有对应实现，且代码注释标注了公式编号
 - [ ] 每个验证实验都写明对应论文的哪个 claim，并对结果给出了解读（包括与预期不符的情况）
-- [ ] 有"论文结果 vs 本 notebook 结果"对照，差异给出了原因
+- [ ] 有“论文结果 vs 本笔记结果”对照，差异给出了原因
 - [ ] 所有简化和论文未明确之处都已标注
-- [ ] 嵌入的原图都有中文说明"这张图该看什么"
+- [ ] 使用的原图都有目标语言的“这张图该看什么”说明
 - [ ] 批判性思考部分不是空话，指向了这篇论文具体的假设和局限
 - [ ] 自测题答案和解读中的每个具体断言（"会发生 X""数值约为 Y"）都实际运行验证过
 - [ ] 查看过所有自绘图的实际渲染结果（图例遮挡、坐标范围、空白子图）
-- [ ] 全文中文，术语保留英文
+- [ ] 面向读者的内容使用目标语言，专业术语可保留英文，图表内部文字为英文
+
+Markdown 模式：
+
+- [ ] 最终回复是完整 Markdown 内容，没有创建 `.md` 文件或泄露临时路径
+- [ ] 代码与实验已运行验证，最终内容没有 notebook dependency bootstrap 或 cell 操作说明
+
+Notebook 模式：
+
+- [ ] `build_notebook.py --execute` 报告 `ok: true`，无警告或警告已处理
+- [ ] 图片均为有效 base64 attachments，没有外部或悬空引用
 - [ ] 本次流程在当前目录只新增了最终 `.ipynb`，所有中间文件仍在 `$PAPER_TMP` 并已按需清理
 
 交付时向用户简要说明：用了哪个提取引擎、实现了哪些内容、哪些论文结论得到了验证、哪些没有及原因、运行时长和依赖。
 
-## 独立运行的硬性要求
+## Notebook 独立运行的硬性要求
 
-这些要求的共同目的是：用户把 `.ipynb` 发给任何人，对方打开就能跑。
+以下要求只适用于 `output=notebook`，共同目的是用户把 `.ipynb` 发给任何人，对方打开就能跑。
 
 - **不依赖外部论文、图片或数据文件。** 原图必须由构建器压入 notebook 的 base64 attachments；实验数据在 notebook 内合成或生成。真实数据下载只能作为可选增强，失败时自动回退到合成数据。
 - **依赖可自举。** 第一个代码单元格必须用当前 kernel 的 `sys.executable -m pip` 安装缺失依赖；网络只可能用于首次补齐依赖，不得把安装失败伪装成成功。依赖安装完成后，notebook 的论文内容、图片和实验应可离线运行。
 - **依赖最小化。** 默认只用 `numpy`、`scipy`、`matplotlib`、`pandas`、`sympy`；深度学习论文需要时才用 `torch`。第一个代码单元格先声明 module 到 pip 包名的映射并自举安装，再导入全部依赖和打印版本。
 - **在普通笔记本电脑 CPU 上运行完。** 整本 notebook 目标 5 分钟内，深度学习论文最多 10 分钟。可以自动检测 CUDA/MPS 加速，但结论不能依赖加速器。
 - **可复现。** 固定所有随机种子（`numpy`、`random`、`torch`）。
-- **图表文字用英文。** 各系统中文字体差异很大，matplotlib 渲染中文常出现方框乱码。图的标题、坐标轴、图例用英文（术语本来就保留英文），中文解读写在 markdown 里。
+- **图表文字用英文。** 各系统字体差异很大，matplotlib 渲染非英文文字常出现方框乱码。图的标题、坐标轴、图例用英文，目标语言的解读写在 markdown 单元格里。
 
 ## 验证的层次
 
@@ -172,14 +224,14 @@ python <skill-dir>/scripts/build_notebook.py check "$PWD/${PAPER_SLUG}_notes.ipy
 2. **独立交叉验证**：数值梯度 vs 解析梯度、高效算法 vs 暴力 oracle、Monte Carlo vs 闭式解
    - **验证你的检查本身有效**：一个从不失败的测试毫无意义。故意破坏实现的关键部分（去掉论文强调的某条规则、改错一个符号），确认检查能报错。这种变异测试本身往往就是很好的教学实验，能说明"这条规则到底在保护什么"
 3. **复现定性结论**：用 toy 实验复现论文的核心说法（"A 比 B 收敛快""复杂度是 O(n log n)""崩溃后仍能选出唯一 leader"），多个随机种子
-4. **与论文数字对照**：列表对比论文报告值和本 notebook 结果，诚实解释差异（规模、数据、简化）
+4. **与论文数字对照**：列表对比论文报告值和本笔记结果，诚实解释差异（规模、数据、简化）
 
 没能复现的结论要如实写出来，这对读者同样有价值。复现结果与论文偏差较大时，先找出是哪个建模假设导致的（论文往往没有交代全部实验细节），尝试合理的替代假设，把两种结果**都**展示出来并分析原因。这通常比只展示调得最像的结果更有启发。
 
 ## 参考文件索引
 
 - `references/extraction.md` — 提取工具安装与配置（MinerU on CUDA / Apple Silicon）、疑难问题、手动修图流程
-- `references/notebook_guide.md` — notebook 各节写法、示例、格式约定（**第 4 步前必读**）
+- `references/notebook_guide.md` — Markdown/notebook 各节写法、示例、语言和格式约定（**第 4 步前必读**）
 - `references/paper_types/*.md` — 五类论文的实现与验证策略（第 3 步按类型读取）
 - `assets/notebook_template.md` — notebook 源文件骨架
 - `scripts/extract_paper.py` — 提取（子命令 `crop`、`render` 用于手动修图）

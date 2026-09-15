@@ -11,6 +11,7 @@ my-skills/
 ├── claude-marketplace/.claude-plugin/marketplace.json
 ├── claude-marketplace/plugins/my-skills -> ../..
 ├── skills/
+│   ├── canvas/
 │   ├── lieflat-visual-explainer/
 │   ├── notetaker/
 │   ├── paper/
