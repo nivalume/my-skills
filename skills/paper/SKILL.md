@@ -56,7 +56,7 @@ PAPER_DIR="$PAPER_TMP/$PAPER_SLUG"
 mkdir -p "$PAPER_DIR"
 ```
 
-后续所有 `extract_paper.py`、人工修图、`plan.md`、源稿和分段 Markdown 的路径都必须位于 `$PAPER_DIR` 下。Markdown 模式不在当前目录写入文件，最终直接返回 Markdown 内容；notebook 模式唯一写入当前工作目录的文件是最终的 `$PWD/${PAPER_SLUG}_notes.ipynb`。不要在当前目录创建任何中间目录或文件，包括提取目录、Markdown、图片、日志或 checkpoint。验证交付物后删除整个 `$PAPER_TMP`；若需要保留中间结果供排查，只保留在临时目录，不要复制到当前目录。`paper-slug` 用简短英文，如 `raft`、`attention-is-all-you-need`。
+后续所有 `extract_paper.py`、人工修图、`plan.md`、源稿和分段 Markdown 的路径都必须位于 `$PAPER_DIR` 下。Markdown 模式不在当前目录写入文件，最终直接返回 Markdown 内容；notebook 模式默认只交付最终的 `${PAPER_SLUG}_notes.ipynb`，位置以用户指定目录为准（如 `papers/`），否则放当前目录。真实 LLM 实验可按下文另提供共享 `.env.example` 与精确的 Git 忽略规则。不要在当前目录创建任何中间目录或文件，包括提取目录、Markdown、图片、日志或 checkpoint。验证交付物后删除整个 `$PAPER_TMP`；若需要保留中间结果供排查，只保留在临时目录，不要复制到当前目录。`paper-slug` 用简短英文，如 `raft`、`attention-is-all-you-need`。
 
 ### 1. 获取与提取
 
@@ -161,6 +161,10 @@ MinerU 的安装、Mac/GPU 配置、模型下载问题见 `references/extraction
 - **为了 toy 规模做的简化**，用 `> 🔧 简化：...` 标出，并说明对结论可能的影响。
 - 可以参考官方代码来消除歧义，但实现应从论文出发，并在笔记中说明参考了什么。
 
+#### 涉及真实 LLM 的实验
+
+当核心机制依赖 LLM 决策（如 ReAct、CodeAct），或用户要求接入模型时，先读 [references/llm_notebooks.md](references/llm_notebooks.md)，实现真实调用路径。脚本化轨迹仅用于明确标注的机制教学或 parser 自检，不能替代模型实验。该分支允许网络调用与外部凭据配置；保留 notebook 内联实现和图片自包含要求。
+
 ### 5. 按输出模式验证与交付
 
 #### Markdown
@@ -174,7 +178,7 @@ python <skill-dir>/scripts/build_notebook.py "$PAPER_DIR/notebook.md" -o "$PWD/$
 python <skill-dir>/scripts/build_notebook.py check "$PWD/${PAPER_SLUG}_notes.ipynb"
 ```
 
-脚本会在一个**空的临时目录**里执行 notebook，因此任何偷偷依赖本地文件的代码都会报错，这正是我们要的效果。输出 JSON 中 `ok: true` 才算通过。报错就修改 `notebook.md` 后重新构建，直到通过。同时检查报告中的 `exec_seconds`、`plot_outputs`、`embedded_images`、`dependency_bootstrap` 和 `invalid_attachments` 是否合理。图片 attachment 必须是可解码的 base64，Markdown 中不能留下外部图片引用。
+脚本会在一个**空的临时目录**里执行 notebook，因此任何偷偷依赖本地文件的代码都会报错，这正是我们要的效果。离线 notebook 的执行报告须有 `ok: true`；报错就修改源稿后重新构建。同时检查报告中的 `exec_seconds`、`plot_outputs`、`embedded_images`、`dependency_bootstrap` 和 `invalid_attachments` 是否合理。图片 attachment 必须是可解码的 base64，Markdown 中不能留下外部图片引用。真实 LLM notebook 按 `references/llm_notebooks.md` 分别验证共享配置加载与真实调用：隔离执行可继承进程环境变量，无凭据时只报告已完成的静态/离线检查，不能把 `check` 的 `ok: true` 当成完整执行成功。
 
 这里 `build_notebook.py` 的 `-o/--output` 是脚本自身的**输出文件路径**，与 paper skill 用户参数 `-o/--output markdown|notebook` 不是同一层接口，不要把格式值传给构建脚本。
 
@@ -199,21 +203,21 @@ Markdown 模式：
 
 Notebook 模式：
 
-- [ ] `build_notebook.py --execute` 报告 `ok: true`，无警告或警告已处理
+- [ ] 离线 notebook 的 `build_notebook.py --execute` 报告 `ok: true`；LLM notebook 另报告凭据加载、真实调用、任务结果与未验证项
 - [ ] 图片均为有效 base64 attachments，没有外部或悬空引用
-- [ ] 本次流程在当前目录只新增了最终 `.ipynb`，所有中间文件仍在 `$PAPER_TMP` 并已按需清理
+- [ ] 交付目录只新增了最终 `.ipynb` 及必要的共享配置模板/忽略规则；所有中间文件仍在 `$PAPER_TMP` 并已按需清理
 
 交付时向用户简要说明：用了哪个提取引擎、实现了哪些内容、哪些论文结论得到了验证、哪些没有及原因、运行时长和依赖。
 
 ## Notebook 独立运行的硬性要求
 
-以下要求只适用于 `output=notebook`，共同目的是用户把 `.ipynb` 发给任何人，对方打开就能跑。
+以下要求只适用于 `output=notebook`，共同目的是代码和论文内容可独立分享。真实 LLM 实验还需接收方自行配置凭据与网络，导读中须说明。
 
 - **不依赖外部论文、图片或数据文件。** 原图必须由构建器压入 notebook 的 base64 attachments；实验数据在 notebook 内合成或生成。真实数据下载只能作为可选增强，失败时自动回退到合成数据。
-- **依赖可自举。** 第一个代码单元格必须用当前 kernel 的 `sys.executable -m pip` 安装缺失依赖；网络只可能用于首次补齐依赖，不得把安装失败伪装成成功。依赖安装完成后，notebook 的论文内容、图片和实验应可离线运行。
+- **依赖可自举。** 第一个代码单元格必须用当前 kernel 的 `sys.executable -m pip` 安装缺失依赖，不得把安装失败伪装成成功。安装后论文内容、图片与离线实验应可离线运行；真实 LLM 实验明确声明持续的 API 网络依赖。
 - **依赖最小化。** 默认只用 `numpy`、`scipy`、`matplotlib`、`pandas`、`sympy`；深度学习论文需要时才用 `torch`。第一个代码单元格先声明 module 到 pip 包名的映射并自举安装，再导入全部依赖和打印版本。
 - **在普通笔记本电脑 CPU 上运行完。** 整本 notebook 目标 5 分钟内，深度学习论文最多 10 分钟。可以自动检测 CUDA/MPS 加速，但结论不能依赖加速器。
-- **可复现。** 固定所有随机种子（`numpy`、`random`、`torch`）。
+- **可复现。** 固定本地随机种子（`numpy`、`random`、`torch`）；远程 LLM 记录模型与采样参数，但不把 `temperature=0` 当成确定性保证。
 - **图表文字用英文。** 各系统字体差异很大，matplotlib 渲染非英文文字常出现方框乱码。图的标题、坐标轴、图例用英文，目标语言的解读写在 markdown 单元格里。
 
 ## 验证的层次
@@ -232,6 +236,7 @@ Notebook 模式：
 
 - `references/extraction.md` — 提取工具安装与配置（MinerU on CUDA / Apple Silicon）、疑难问题、手动修图流程
 - `references/notebook_guide.md` — Markdown/notebook 各节写法、示例、语言和格式约定（**第 4 步前必读**）
+- `references/llm_notebooks.md` — LLM 实验的共享配置、真实响应适配、验证与 notebook 状态排查（涉及 LLM 决策或接入模型时必读）
 - `references/paper_types/*.md` — 五类论文的实现与验证策略（第 3 步按类型读取）
 - `assets/notebook_template.md` — notebook 源文件骨架
 - `scripts/extract_paper.py` — 提取（子命令 `crop`、`render` 用于手动修图）

@@ -246,7 +246,7 @@ follower 的冲突日志，下面 6.3 节的 `append_entries` 实现正是这个
 
 每张原图都要有目标语言的“怎么看这张图”说明，指出读者该关注的具体细节，并尽量连接到后面的代码。
 
-notebook 模式交付前用 `python <skill-dir>/scripts/build_notebook.py check <output>.ipynb` 检查 `embedded_images`、base64 attachment、引用完整性和 `dependency_bootstrap`。
+notebook 模式交付前用 `python <skill-dir>/scripts/build_notebook.py check <output>.ipynb` 检查 `embedded_images`、base64 attachment、引用完整性和 `dependency_bootstrap`。本节“只保留最终 `.ipynb`”指论文内容与图片；涉及 LLM 时，共享配置文件与执行要求见 [llm_notebooks.md](llm_notebooks.md)。
 
 ## 6. 自绘解释图
 
