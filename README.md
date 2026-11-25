@@ -12,7 +12,6 @@ my-skills/
 ├── claude-marketplace/plugins/my-skills -> ../..
 ├── skills/
 │   ├── canvas/
-│   ├── lieflat-visual-explainer/
 │   ├── notetaker/
 │   ├── paper/
 │   └── prompt-generator/
@@ -55,7 +54,7 @@ Use `--copy` only when symlinks are unavailable or an independent copy is desire
 
 ## Licensing
 
-Most repository content remains unpublished under the top-level `UNLICENSED` plugin declaration. The vendored assets inside `skills/lieflat-visual-explainer/` retain their own licenses: Visual Explainer-derived material is MIT, while Lieflat Charts assets are PolyForm Noncommercial 1.0.0 and may only be used for noncommercial purposes. See that skill's `LICENSES/` and `THIRD_PARTY_NOTICES.md` before redistribution.
+Most repository content remains unpublished under the top-level `UNLICENSED` plugin declaration.
 
 ## Plugin Validation
 

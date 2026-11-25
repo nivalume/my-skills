@@ -8,7 +8,6 @@
   "license": "UNLICENSED",
   "skills": [
     "./skills/canvas",
-    "./skills/lieflat-visual-explainer",
     "./skills/notetaker",
     "./skills/paper",
     "./skills/prompt-generator"
